@@ -213,3 +213,61 @@ The range function supports the placeholder `_` syntax:
 using namespace xt::placeholders;  // required for `_` to work
 xt::view(a, xt::range(_, 2), xt::all(), xt::range(1, _));
 ```
+
+More views
+------------
+
+From `namespace xt` :
+- `strided_view`, slice vector built at run-time (base for views listed below)
+- `transpose`, lazy trasposed view
+- `ravel<layout_type>, flatten`, one-dimensional views
+- `reshape_view`, view as if new shape given 
+- `dynamic_view`, same as, but slower than `strided_view`, with support of `keep` and `drop` functions
+- `index_view`, view of elements with specified indices
+- `filter`, view of elements that verify given condition
+- `filtration`, optimized `filter` for scalar assignments
+- `masked_view`, apply mask on `xexpression`
+- `broadcast`, to specified shape
+- `real`, `imag`, views on real and imaginary parts of complex expression
+
+```c++
+xt::strided_view(a, { xt::range(0, 1), xt::newaxis(), 1, xt::all() });
+xt::transpose(a);
+xt::ravel<layout_type::column_major>(a);
+xt::flatten(a);
+xt::reshape_view(a, { 4, 2, 3 });
+xt::dynamic_view(a, { xt::range(0, 1), 1, xt::all(), xt::keep(0, 2, 3), xt::drop(1, 2, 4) });
+xt::index_view(a, {{0,0}, {1, 0}, {0, 1}});
+xt::filter(a, a >= 5);
+xt::filtration(a, a >= 5) += 100;
+xt::masked_view(a, {{true, false, false}, {false, true, false}});
+xt::broadcast(a, { 3, 2, 3 });
+xt::real(e) = xt::zeros<double>({2, 2});
+```
+
+Assigning to views
+------------
+
+Since views _cannot be resized_, when assigning an expression to a view, broadcasting rules are applied:
+
+```c++
+view(a, all(), all()) = 4.5;
+// => a = {{4.5, 4.5, 4.5}, {4.5, 4.5, 4.5}}
+```
+
+Expression builders
+===================
+
+The expressions returned by these functions implement the
+laziness of `xtensor`, that is, they don’t hold any value. Values are
+computed upon request.
+
+`zeros`, `ones`, `eye`
+
+`arange`, `linspace`, `logspace`
+
+`concatenate`, `stack`
+
+`rand`,`randint`,`randn`
+
+`meshgrid`
