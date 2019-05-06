@@ -4,7 +4,7 @@ Lazy evaluation
 An expression such as `x + y * sin(z)` does not hold the result. **Values are only computed upon access or when the expression is assigned to a container**. This
 allows to operate symbolically on very large arrays and only compute the result for the indices of interest:
 
-``` {.sourceCode .}
+```c++
 // Assume x and y are xarrays each containing 1 000 000 objects
 auto f = cos(x) + sin(y);
 
@@ -15,7 +15,7 @@ double second_res = f(2500);
 
 That means if you use the same expression in two assign statements, the computation of the expression will be done twice. It might be convenient to store the result of the expression in a temporary variable:
 
-``` {.sourceCode .}
+```c++
 xt::xarray<double> tmp = cos(x) + sin(y);
 xt::xarray<double> res1 = tmp + 2 * x;
 xt::xarray<double> res2 = tmp - 2 * x;
@@ -28,7 +28,7 @@ If you have to force the evaluation of an xexpression then you can use ``xt::eva
 Evaluating will either return a *rvalue* to a newly allocated container in the case of an xexpression, or a reference to a container in case you are evaluating a ``xarray`` or ``xtensor``. Note that, in order to avoid copies, you should use a universal reference on the lefthand side (``auto&&``). For example:
 
 
-``` {.sourceCode .}
+```c++
 xt::xarray<double> a = {1, 2, 3};
 xt::xarray<double> b = {3, 2, 1};
 auto calc = a + b; // unevaluated xexpression!
@@ -45,7 +45,7 @@ the other. For example, if `A` has shape `(2, 3)`, and `B` has shape
 `(4, 2, 3)`, the result of a broadcast operation with `A` and `B` has
 shape `(4, 2, 3)`.
 
-``` {.sourceCode .}
+```c++
    (2, 3) # A
 (4, 2, 3) # B 
 ---------
@@ -55,7 +55,7 @@ shape `(4, 2, 3)`.
 The same rule holds for scalars, which are handled as 0-D expressions.
 If A is a scalar, the equation becomes:
 
-``` {.sourceCode .}
+```c++
        () # A
 (4, 2, 3) # B 
 ---------
@@ -67,7 +67,7 @@ them has size `1`, it is broadcast to match the size of the other. Let's
 say B has the shape `(4, 2, 1)` in the previous example, so the
 broadcasting happens as follows:
 
-``` {.sourceCode .}
+```c++
    (2, 3) # A
 (4, 2, 1) # B 
 ---------
@@ -85,7 +85,7 @@ used by multi-dimensional arrays:
 
 Examples:
 
-``` {.sourceCode .}
+```c++
 std::vector<size_t> shape = { 3, 2, 4 };
 std::vector<size_t> strides = { 8, 4, 1 };
 xt::xarray<double, xt::layout_type::dynamic> a(shape, strides);
@@ -114,7 +114,7 @@ Runtime vs Compile-time dimensionality:
 
 Example:
 
-``` {.sourceCode .}
+```c++
 #include "xtensor/xarray.hpp"
 #include "xtensor/xtensor.hpp"
 #include "xtensor/xfixed.hpp"
@@ -134,7 +134,7 @@ Additional interface they provide:
 -   `resize()`: resizes the container, doesn't preserve the container elements.
 -   `strides()`: returns the strides of the container.
 
-``` {.sourceCode .}
+```c++
 // Tip: The shape argument can have one of its value equal to -1, 
 //      in this case the value is inferred from the number of elements 
 //      in the container and the remaining values in the shape
@@ -147,12 +147,12 @@ Aliasing and temporaries
 ========================
 
 In the following example, temporary variable will be created to store `a + b + c` before assigning to b, because b can be required to resize:
-``` {.sourceCode .}
+```c++
 b = a + c + b;
 ```
 
 If the left-hand side is not involved in the expression being assigned, to prevent the usage of temporary variable use `xt::noalias()`:
-``` {.sourceCode .}
+```c++
 xt::noalias(b) = a + c;
 // Even if b has to be resized, a+c will be assigned directly to it
 ```
@@ -161,7 +161,7 @@ Scalar assignment
 ========================
 In xtensor scalars are assumed to be 0-D expressions, so `a = 1.5` will lead to resizing `a` to 0 dimensions and assigning `1.5`.
 The correct way to assign scalar is using `.fill()` method:
-``` {.sourceCode .}
+```c++
 a = 1.5;     // 0-D xarray
 a.fill(1.5); // N-D xarray, all values equal 1.5
 ```
@@ -200,7 +200,7 @@ Slices can be specified in the following ways:
 -   `keep(i0, i1, i2, ...)` a slice selecting non-contiguous indices to keep on the underlying expression
 -   `drop(i0, i1, i2, ...)` a slice selecting non-contiguous indices to drop on the underlying expression
 
-``` {.}
+```c++
 xt::view(a, xt::range(1, 3), xt::all(), xt::range(1, 3));
 xt::view(a, 1, xt::all(), xt::range(0, 4, 2));
 xt::view(a, xt::all(), xt::all(), xt::newaxis(), xt::all());
@@ -209,7 +209,7 @@ xt::view(a, xt::drop(0), xt::all(), xt::keep(0, 3));
 
 The range function supports the placeholder `_` syntax:
 
-``` {.}
+```c++
 using namespace xt::placeholders;  // required for `_` to work
 xt::view(a, xt::range(_, 2), xt::all(), xt::range(1, _));
 ```
